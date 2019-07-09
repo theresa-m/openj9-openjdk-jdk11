@@ -215,6 +215,7 @@ public class WhiteBox {
                 if (finalized.await(timeoutMillis, MILLISECONDS)
                     && queue.remove(timeoutMillis) != null
                     && ref.get() == null) {
+                    System.out.println("SYSTEM RUN FINALIZATION");
                     System.runFinalization(); // try to pick up stragglers
                     return;
                 }

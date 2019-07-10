@@ -61,8 +61,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BooleanSupplier;
 
+import java.util.logging.Logger;
+
 @Test
 public class WhiteBox {
+    private static final Logger log = Logger.getLogger("test.WhiteBox");
     final ThreadLocalRandom rnd = ThreadLocalRandom.current();
     final MethodHandles.Lookup lookup = MethodHandles.lookup();
     final VarHandle ITRS, ITEMS, TAKEINDEX, PUTINDEX, COUNT, HEAD, NEXT, PREVTAKEINDEX;
@@ -203,7 +206,7 @@ public class WhiteBox {
 
     /** No guarantees, but effective in practice. */
     static void forceFullGc() {
-        System.out.println("IN FORCE FULL GC");
+        log.info("IN FORCE FULL GC");
         long timeoutMillis = 1000L;
         CountDownLatch finalized = new CountDownLatch(1);
         ReferenceQueue<Object> queue = new ReferenceQueue<>();
@@ -212,12 +215,12 @@ public class WhiteBox {
             queue);
         try {
             for (int tries = 3; tries--> 0; ) {
-                System.out.println("RUN SYSTEM GC");
+                log.info("RUN SYSTEM GC");
                 System.gc();
                 if (finalized.await(timeoutMillis, MILLISECONDS)
                     && queue.remove(timeoutMillis) != null
                     && ref.get() == null) {
-                    System.out.println("SYSTEM RUN FINALIZATION");
+                    log.info("SYSTEM RUN FINALIZATION");
                     System.runFinalization(); // try to pick up stragglers
                     return;
                 }

@@ -368,6 +368,11 @@ public class ObjectInputStream
      */
     private boolean refreshLudcl = false;
     private Object startingLudclObject = null;
+    private String debugLudclMessages = "";
+
+    private void addLudclDebugMessage(String message) {
+        debugLudclMessages = debugLudclMessages + message + "\n";
+    }
 
     /**
      * Creates an ObjectInputStream that reads from the specified InputStream.
@@ -539,7 +544,13 @@ public class ObjectInputStream
             throw new AssertionError("internal error");
 
         ClassLoader oldCachedLudcl = null;
-	boolean setCached = false;
+    boolean setCached = false;
+    
+    boolean debugNestedReadObjectCall = false;
+    boolean debugRefreshLudcl = refreshLudcl;
+    if (null != startingLudclObject) {
+        debugNestedReadObjectCall = true;
+    }
 
 	if (((null == curContext) || refreshLudcl) && (isClassCachingEnabled)) {
             oldCachedLudcl = cachedLudcl;
@@ -558,6 +569,15 @@ public class ObjectInputStream
             if (null == startingLudclObject) {
                 startingLudclObject = this;
             }
+        }
+
+        if (debugNestedReadObjectCall) {
+             /* TODO log ludcl information coming from a nested readObject call. */
+             addLudclDebugMessage( "Starting nested readObject. "
+                + " ludcl was refreshed: " + debugRefreshLudcl
+                + " cached ludcl is: " + cachedLudcl.getName()
+                + " expected ludcl is: " + latestUserDefinedLoader().getName()
+            );
         }
 
         // if nested read, passHandle contains handle of enclosing object
@@ -866,11 +886,19 @@ public class ObjectInputStream
                 return classCache.get(name, cachedLudcl);
             }
         } catch (ClassNotFoundException ex) {
+            /* TODO log cached and expected ludcl. */
+            addLudclDebugMessage("Class resolution failed. "
+                + " cached ludcl is: " + cachedLudcl.getName()
+                + " expected ludcl is: " + latestUserDefinedLoader().getName()
+            );
+
             Class<?> cl = primClasses.get(name);
             if (cl != null) {
                 return cl;
             } else {
-                throw ex;
+                ClassNotFoundException debugEx = new ClassNotFoundException(debugLudclMessages);
+                debugEx.setStackTrace(ex.getStackTrace());
+                throw debugEx;
             }
         }
     }
@@ -2416,6 +2444,13 @@ public class ObjectInputStream
                         curContext = new SerialCallbackContext(obj, slotDesc);
 
                         bin.setBlockDataMode(true);
+
+                        /* TODO log ludcl information going into invokeReadObject */
+                        addLudclDebugMessage("starting invokeReadObject "
+                            + " object to invoke is of class: " + obj.getClass().getName()
+                            + " cached ludcl is: " + cachedLudcl.getName()
+                            + " expected ludcl is: " + latestUserDefinedLoader().getName()
+                        );
 
                         /* user code is invoked */
                         refreshLudcl = true;

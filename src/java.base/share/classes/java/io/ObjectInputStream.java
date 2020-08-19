@@ -575,8 +575,8 @@ public class ObjectInputStream
              /* TODO log ludcl information coming from a nested readObject call. */
              addLudclDebugMessage( "Starting nested readObject. "
                 + " ludcl was refreshed: " + debugRefreshLudcl
-                + " cached ludcl is: " + cachedLudcl.getName()
-                + " expected ludcl is: " + latestUserDefinedLoader().getName()
+                + " cached ludcl is: " + cachedLudcl.toString()
+                + " expected ludcl is: " + latestUserDefinedLoader().toString()
             );
         }
 
@@ -895,8 +895,8 @@ public class ObjectInputStream
         } catch (ClassNotFoundException ex) {
             /* TODO log cached and expected ludcl. */
             addLudclDebugMessage("Class resolution failed. "
-                + " cached ludcl is: " + cachedLudcl.getName()
-                + " expected ludcl is: " + latestUserDefinedLoader().getName()
+                + " cached ludcl is: " + cachedLudcl.toString()
+                + " expected ludcl is: " + latestUserDefinedLoader().toString()
             );
 
             Class<?> cl = primClasses.get(name);
@@ -2455,8 +2455,8 @@ public class ObjectInputStream
                         /* TODO log ludcl information going into invokeReadObject */
                         addLudclDebugMessage("starting invokeReadObject "
                             + " object to invoke is of class: " + obj.getClass().getName()
-                            + " cached ludcl is: " + cachedLudcl.getName()
-                            + " expected ludcl is: " + latestUserDefinedLoader().getName()
+                            + " cached ludcl is: " + cachedLudcl.toString()
+                            + " expected ludcl is: " + latestUserDefinedLoader().toString()
                         );
 
                         /* user code is invoked */
